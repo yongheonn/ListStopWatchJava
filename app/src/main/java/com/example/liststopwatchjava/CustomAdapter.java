@@ -12,25 +12,23 @@ import java.util.ArrayList;
 
 public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
-    private ArrayList<DoListData> localDataSet;
+    private CategoryData categoryData;
     private OnItemClickListener mOnItemClickListener;
-    private String title;
     private final int TYPE_HEADER = 0;
     private final int TYPE_ADD = 1;
     private final int TYPE_CATEGORY = 2;
     private final int TYPE_ITEM = 3;
 
     public interface OnItemClickListener {
-        public void onCategoryClick(int position, ArrayList<DoListData> dataSet);
+        public void onCategoryClick(int position, CategoryData _categoryData);
 
-        public void onItemClick(int position, ArrayList<DoListData> dataSet);
+        public void onItemClick(int position, CategoryData _categoryData);
 
         public void onAddClick(int position);
     }
 
-    public CustomAdapter(ArrayList<DoListData> dataSet, String _title, OnItemClickListener onItemClickListener) {
-        localDataSet = dataSet;
-        title = _title;
+    public CustomAdapter(CategoryData _categoryData, OnItemClickListener onItemClickListener) {
+        categoryData = _categoryData;
         mOnItemClickListener = onItemClickListener;
     }
 
@@ -56,20 +54,22 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         if (viewHolder instanceof DoListViewHolder) {
-            ((DoListViewHolder) viewHolder).getTextView().setText(localDataSet.get(position - 1).name);
+            ((DoListViewHolder) viewHolder).getTextView().setText(categoryData.doListData
+                    .get(Math.abs(categoryData.sequence.get(position)) - 1).name);
         }
         else if(viewHolder instanceof CategoryViewHolder) {
-            ((CategoryViewHolder) viewHolder).getTextView().setText(localDataSet.get(position - 1).name);
+            ((CategoryViewHolder) viewHolder).getTextView().setText(categoryData.categoryData
+                    .get(categoryData.sequence.get(position) - 1).name);
         }
         else if(viewHolder instanceof TitleViewHolder) {
-            ((TitleViewHolder) viewHolder).getTextView().setText(title);
+            ((TitleViewHolder) viewHolder).getTextView().setText(categoryData.name);
         }
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return localDataSet.size() + 2;
+        return categoryData.sequence.size() + 1;
     }
 
     @Override
@@ -93,7 +93,9 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private boolean isPositionCategory(int position) {
-        return localDataSet.get(position - 1).ioType == CustomIO.IOType.CATEGORY;
+        if(categoryData.sequence.get(position) > 0)
+            return true;
+        return false;
     }
 
     private TitleViewHolder CreateHeaderHolder(final ViewGroup viewGroup) {
@@ -142,7 +144,7 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             @Override
             public void onClick(View v) {
-                mOnItemClickListener.onItemClick(viewHolder.getAdapterPosition(), localDataSet);
+                mOnItemClickListener.onItemClick(viewHolder.getAdapterPosition(), categoryData);
             }
         });
     }
@@ -152,7 +154,7 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             @Override
             public void onClick(View v) {
-                mOnItemClickListener.onCategoryClick(viewHolder.getAdapterPosition(), localDataSet);
+                mOnItemClickListener.onCategoryClick(viewHolder.getAdapterPosition(), categoryData);
             }
         });
     }

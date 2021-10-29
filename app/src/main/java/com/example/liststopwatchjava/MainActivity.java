@@ -10,7 +10,10 @@ import androidx.wear.widget.drawer.WearableActionDrawerView;
 import androidx.wear.widget.drawer.WearableDrawerLayout;
 import androidx.wear.widget.drawer.WearableNavigationDrawerView;
 
+import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class MainActivity extends WearableActivity {
 
@@ -18,19 +21,33 @@ public class MainActivity extends WearableActivity {
     private WearableNavigationDrawerView wearableNavigationDrawer;
     private WearableActionDrawerView wearableActionDrawer;
     private ArrayList<Integer> intentId = new ArrayList<Integer>();
-    private CustomIO.IOType intentType = CustomIO.IOType.CATEGORY;
-    private String title = "메인 카테고리";
+    private CategoryData categoryData = new CategoryData();
+    private Context context;
     public static Context CONTEXT;
 
-    public void OnResume()
+    public void OnResume(CustomIO.IOType _ioType)
     {
         super.onResume();
 
         RecyclerView recyclerList = (RecyclerView)findViewById(R.id.category_list);
 
         CustomIO customIO = new CustomIO(getFilesDir(), intentId);
+        try {
+            if(_ioType == CustomIO.IOType.CATEGORY) {
+                categoryData.sequence.add(Collections.max(categoryData.sequence) + 1);
+                categoryData.categoryData.add(new CategoryData());
+            }
+            else {
+                categoryData.sequence.add(Collections.min(categoryData.sequence) - 1);
+                categoryData.doListData.add(new DoListData());
+            }
 
-        CustomAdapter adapter = new CustomAdapter(customIO.Load(), title, new TouchListener());
+            customIO.Save(categoryData);
+            customIO.Load(categoryData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        CustomAdapter adapter = new CustomAdapter(categoryData, new TouchListener());
    //    recyclerList.setLayoutManager(
      //           new CustomScrollingLayoutCallback(this));
         recyclerList.setAdapter(adapter);
@@ -41,23 +58,26 @@ public class MainActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        CONTEXT = this;
+        context = this;
 
         Intent intent = getIntent();
         if(intent.getSerializableExtra("ID") != null)
             intentId = (ArrayList<Integer>) intent.getSerializableExtra("ID");
-        else
+        else {
             intentId.add(0);
-        if(intent.getSerializableExtra("TYPE") != null)
-            intentType = (CustomIO.IOType) intent.getSerializableExtra("TYPE");
-        if(intent.getSerializableExtra("NAME") != null)
-            title = intent.getStringExtra("NAME");
-
+            categoryData.name = "메인 카테고리";
+        }
         RecyclerView recyclerList = (RecyclerView)findViewById(R.id.category_list);
 
         CustomIO customIO = new CustomIO(getFilesDir(), intentId);
 
-        CustomAdapter adapter = new CustomAdapter(customIO.Load(), title, new TouchListener());
+        try {
+            customIO.Load(categoryData);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        CustomAdapter adapter = new CustomAdapter(categoryData, new TouchListener());
         recyclerList.setLayoutManager(
                 new CustomScrollingLayoutCallback(this));
         recyclerList.setAdapter(adapter);
@@ -66,7 +86,7 @@ public class MainActivity extends WearableActivity {
     private class TouchListener implements CustomAdapter.OnItemClickListener
     {
         @Override
-        public void onCategoryClick(int position, ArrayList<DoListData> dataSet) {
+        public void onCategoryClick(int position, CategoryData _categoryData) {
                 Intent intent = new Intent(
                         getApplicationContext(), // 현재 화면의 제어권자
                         MainActivity.class); // 다음 넘어갈 클래스 지정
@@ -74,13 +94,11 @@ public class MainActivity extends WearableActivity {
                 nextId.addAll(intentId);
                 nextId.add(position);
                 intent.putExtra("ID", nextId);
-                intent.putExtra("NAME", dataSet.get(position - 1).name);
-             //   intent.putExtra("TYPE", )
                 startActivity(intent);
         }
 
         @Override
-        public void onItemClick(int position, ArrayList<DoListData> dataSet) {
+        public void onItemClick(int position, CategoryData _categoryData) {
 
         }
 
@@ -89,9 +107,12 @@ public class MainActivity extends WearableActivity {
             Intent intent = new Intent(
                     getApplicationContext(), // 현재 화면의 제어권자
                     AddItemSettingActivity.class); // 다음 넘어갈 클래스 지정
+            ArrayList<Integer> nextId = new ArrayList<Integer>();
+            nextId.addAll(intentId);
+            nextId.add(categoryData.sequence.size());
 
-            intent.putExtra("ID", intentId);
-            intent.putExtra("INTENT", getIntent());
+            intent.putExtra("ID", nextId);
+            CONTEXT = context;
             startActivity(intent);
         }
     }
