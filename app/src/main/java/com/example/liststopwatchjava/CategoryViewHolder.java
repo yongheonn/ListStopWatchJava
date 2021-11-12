@@ -9,17 +9,9 @@ import androidx.recyclerview.widget.RecyclerView;
 public class CategoryViewHolder extends RecyclerView.ViewHolder {
 
     public Button button;
-    public TextView textView;
 
     public CategoryViewHolder(View itemLayoutView) {
         super(itemLayoutView);
-
-        textView = (TextView) itemLayoutView.findViewById(R.id.category_textView);
         button = (Button) itemLayoutView.findViewById(R.id.category_button);
-    }
-
-
-    public TextView getTextView() {
-        return textView;
     }
 }

@@ -7,20 +7,13 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-public class CategoryAddViewHolder extends RecyclerView.ViewHolder {
+public class AddItemViewHolder extends RecyclerView.ViewHolder {
 
     public Button button;
-    public TextView textView;
 
-    public CategoryAddViewHolder(View itemLayoutView) {
+    public AddItemViewHolder(View itemLayoutView) {
         super(itemLayoutView);
 
-        textView = (TextView) itemLayoutView.findViewById(R.id.add_textView);
         button = (Button) itemLayoutView.findViewById(R.id.add_button);
-    }
-
-
-    public TextView getTextView() {
-        return textView;
     }
 }

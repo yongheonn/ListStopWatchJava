@@ -33,6 +33,15 @@
         <activity
             android:name=".AddItemSettingActivity">
         </activity>
+        <activity
+            android:name=".ToDoActivity">
+        </activity>
+        <activity
+            android:name=".CategoryInfoActivity">
+        </activity>
+        <activity
+            android:name=".CategorySettingActivity">
+        </activity>
     </application>
 
 </manifest>

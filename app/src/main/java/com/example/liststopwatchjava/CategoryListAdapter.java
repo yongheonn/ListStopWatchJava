@@ -5,12 +5,11 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-
-public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     private CategoryData categoryData;
     private OnItemClickListener mOnItemClickListener;
@@ -20,14 +19,18 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     private final int TYPE_ITEM = 3;
 
     public interface OnItemClickListener {
-        public void onCategoryClick(int position, CategoryData _categoryData);
+        public void onTitleClick();
 
-        public void onItemClick(int position, CategoryData _categoryData);
+        public void onSettingClick();
+
+        public void onCategoryClick(int position);
+
+        public void onToDoClick(int position);
 
         public void onAddClick(int position);
     }
 
-    public CustomAdapter(CategoryData _categoryData, OnItemClickListener onItemClickListener) {
+    public CategoryListAdapter(CategoryData _categoryData, OnItemClickListener onItemClickListener) {
         categoryData = _categoryData;
         mOnItemClickListener = onItemClickListener;
     }
@@ -53,16 +56,18 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        if (viewHolder instanceof DoListViewHolder) {
-            ((DoListViewHolder) viewHolder).getTextView().setText(categoryData.doListData
-                    .get(Math.abs(categoryData.sequence.get(position)) - 1).name);
+        if (viewHolder instanceof ToDoViewHolder) {
+            final int index = categoryData.sequence.get(position);
+            ((ToDoViewHolder) viewHolder).button.setText(categoryData.toDoData
+                    .get(index).name);
         }
         else if(viewHolder instanceof CategoryViewHolder) {
-            ((CategoryViewHolder) viewHolder).getTextView().setText(categoryData.categoryData
-                    .get(categoryData.sequence.get(position) - 1).name);
+            final int index = categoryData.sequence.get(position);
+            ((CategoryViewHolder) viewHolder).button.setText(categoryData.categoryData
+                    .get(index).name);
         }
         else if(viewHolder instanceof TitleViewHolder) {
-            ((TitleViewHolder) viewHolder).getTextView().setText(categoryData.name);
+            ((TitleViewHolder) viewHolder).textView.setText(categoryData.name);
         }
     }
 
@@ -83,7 +88,6 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return TYPE_ITEM;
     }
 
-
     private boolean isPositionHeader(int position) {
         return position == 0;
     }
@@ -93,23 +97,24 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     }
 
     private boolean isPositionCategory(int position) {
-        if(categoryData.sequence.get(position) > 0)
+        if(categoryData.sequence.isCategory(position))
             return true;
         return false;
     }
 
     private TitleViewHolder CreateHeaderHolder(final ViewGroup viewGroup) {
         View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.menu_title, viewGroup, false);
-        view.setSelected(true);
+                .inflate(R.layout.list_title, viewGroup, false);
         final TitleViewHolder viewHolder = new TitleViewHolder(view);
+        SetClickListener(viewHolder);
+
         return viewHolder;
     }
 
-    private DoListViewHolder CreateItemHolder(final ViewGroup viewGroup) {
+    private ToDoViewHolder CreateItemHolder(final ViewGroup viewGroup) {
         final View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.item, viewGroup, false);
-        final DoListViewHolder viewHolder = new DoListViewHolder(view);
+                .inflate(R.layout.item_todo, viewGroup, false);
+        final ToDoViewHolder viewHolder = new ToDoViewHolder(view);
 
         SetClickListener(viewHolder);
         TouchEffect(viewHolder, view);
@@ -119,7 +124,7 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
     private CategoryViewHolder CreateCategoryHolder(final ViewGroup viewGroup) {
         final View view = LayoutInflater.from(viewGroup.getContext())
-                .inflate(R.layout.category, viewGroup, false);
+                .inflate(R.layout.item_category, viewGroup, false);
         final CategoryViewHolder viewHolder = new CategoryViewHolder(view);
 
         SetClickListener(viewHolder);
@@ -128,10 +133,10 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return viewHolder;
     }
 
-    private CategoryAddViewHolder CreateAddHolder(final ViewGroup viewGroup) {
+    private AddItemViewHolder CreateAddHolder(final ViewGroup viewGroup) {
         final View view = LayoutInflater.from(viewGroup.getContext())
                 .inflate(R.layout.list_add_item_button, viewGroup, false);
-        final CategoryAddViewHolder viewHolder = new CategoryAddViewHolder(view);
+        final AddItemViewHolder viewHolder = new AddItemViewHolder(view);
 
         SetAddClickListener(viewHolder);
         TouchEffect(viewHolder, view);
@@ -139,12 +144,32 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         return viewHolder;
     }
 
-    private void SetClickListener(final DoListViewHolder viewHolder) {
+    private void SetClickListener(final TitleViewHolder viewHolder) {
         viewHolder.button.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-                mOnItemClickListener.onItemClick(viewHolder.getAdapterPosition(), categoryData);
+                mOnItemClickListener.onTitleClick();
+            }
+        });
+
+        viewHolder.textView.setSelected(true);
+
+        viewHolder.setting.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                mOnItemClickListener.onSettingClick();
+            }
+        });
+    }
+
+    private void SetClickListener(final ToDoViewHolder viewHolder) {
+        viewHolder.button.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                mOnItemClickListener.onToDoClick(viewHolder.getAdapterPosition());
             }
         });
     }
@@ -154,12 +179,12 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
 
             @Override
             public void onClick(View v) {
-                mOnItemClickListener.onCategoryClick(viewHolder.getAdapterPosition(), categoryData);
+                mOnItemClickListener.onCategoryClick(viewHolder.getAdapterPosition());
             }
         });
     }
 
-    private void SetAddClickListener(final CategoryAddViewHolder viewHolder) {
+    private void SetAddClickListener(final AddItemViewHolder viewHolder) {
         viewHolder.button.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -169,7 +194,7 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         });
     }
 
-    private void TouchEffect(DoListViewHolder viewHolder, final View view) {
+    private void TouchEffect(ToDoViewHolder viewHolder, final View view) {
         viewHolder.button.setOnTouchListener(new View.OnTouchListener() {
 
             @Override
@@ -213,7 +238,7 @@ public class CustomAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
         });
     }
 
-    private void TouchEffect(CategoryAddViewHolder viewHolder, final View view) {
+    private void TouchEffect(AddItemViewHolder viewHolder, final View view) {
         viewHolder.button.setOnTouchListener(new View.OnTouchListener() {
 
             @Override

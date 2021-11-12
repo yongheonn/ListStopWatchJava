@@ -5,7 +5,7 @@
     android:layout_marginLeft="@dimen/margin_medium"
     android:layout_marginRight="@dimen/margin_medium"
 
-    android:background="@drawable/category_add_background"
+    android:background="@drawable/green_corner_background"
     >
 
     <Button

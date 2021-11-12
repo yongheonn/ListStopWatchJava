@@ -1,30 +1,46 @@
 package com.example.liststopwatchjava;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RadioGroup;
+import android.widget.Switch;
 
-import java.util.ArrayList;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import static com.example.liststopwatchjava.MainActivity.CONTEXT;
 
 public class AddItemSettingActivity extends WearableActivity {
     private CustomIO.IOType intentType = CustomIO.IOType.CATEGORY;
     private String unitTime = "초";
+    private boolean isAdd = false;
+
+    @Override
+    public void onBackPressed() {
+        if(isAdd)
+            ((MainActivity) CONTEXT.get(CONTEXT.size() - 1)).OnResume(intentType);
+        else
+            ((MainActivity) CONTEXT.get(CONTEXT.size() - 1)).checkChanged();
+        CONTEXT.remove(CONTEXT.size() - 1);
+        super.onBackPressed();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_add_item_setting);
-        Intent intent = getIntent();
-        final ArrayList<Integer> id = (ArrayList<Integer>) intent.getSerializableExtra("ID");
+        final IntentId intentId = new IntentId(getIntent());
         final Button isCategory = (Button) findViewById(R.id.is_category);
         final Button isDoList = (Button) findViewById(R.id.is_doList);
-        final Button confirm = (Button) findViewById(R.id.add_confirm);
+
         final EditText editText = (EditText) findViewById(R.id.add_editText_name);
-        final LinearLayout linearLayout = (LinearLayout) findViewById(R.id.add_itemOnly);
+
+        final LinearLayout linearLayout_toDo = (LinearLayout) findViewById(R.id.add_toDoOnly);
         final EditText editText_pageTotal = (EditText) findViewById(R.id.add_editText_pageTotal);
         final EditText editText_pageName = (EditText) findViewById(R.id.add_editText_pageName);
         final EditText editText_pageTarget = (EditText) findViewById(R.id.add_editText_pageTarget);
@@ -32,6 +48,9 @@ public class AddItemSettingActivity extends WearableActivity {
         final Button button_second = (Button) findViewById(R.id.add_button_timeSecond);
         final Button button_minute = (Button) findViewById(R.id.add_button_timeMinute);
         final Button button_hour = (Button) findViewById(R.id.add_button_timeHour);
+        final Switch switch_isStep = (Switch) findViewById(R.id.add_switch);
+
+        final Button confirm = (Button) findViewById(R.id.add_confirm);
 
         button_second.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -68,7 +87,7 @@ public class AddItemSettingActivity extends WearableActivity {
             public void onClick(View v) {
                 isCategory.setEnabled(false);
                 isDoList.setEnabled(true);
-                linearLayout.setVisibility(View.GONE);
+                linearLayout_toDo.setVisibility(View.GONE);
                 intentType = CustomIO.IOType.CATEGORY;
             }
         });
@@ -78,25 +97,30 @@ public class AddItemSettingActivity extends WearableActivity {
             public void onClick(View v) {
                 isDoList.setEnabled(false);
                 isCategory.setEnabled(true);
-                linearLayout.setVisibility(View.VISIBLE);
-                intentType = CustomIO.IOType.DOLIST;
+                linearLayout_toDo.setVisibility(View.VISIBLE);
+                intentType = CustomIO.IOType.TODO;
             }
         });
 
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                CustomIO customIO = new CustomIO(getFilesDir(), id);
-                if (intentType == CustomIO.IOType.CATEGORY)
-                    customIO.Save(new CategoryData(editText.getText().toString()));
-                else {
-                    double pagePerTime = Double.parseDouble(editText_pageTarget.getText().toString())
-                            / Double.parseDouble(editText_timeTarget.getText().toString());
-                    int pageTotal = Integer.parseInt(editText_pageTotal.getText().toString());
-                    customIO.Save(new DoListData(editText.getText().toString(),
-                            pageTotal, pagePerTime, unitTime, editText_pageName.getText().toString()));
+                final CustomIO customIO = new CustomIO(getFilesDir(), intentId.getIntentId());
+
+                if (intentType == CustomIO.IOType.CATEGORY) {
+                    final CategoryData toAddCategoryData = new CategoryData(editText.getText().toString());
+
+                    customIO.Save(toAddCategoryData.streamData());
                 }
-                ((MainActivity) MainActivity.CONTEXT).OnResume(intentType);
+                else {
+                    final double pagePerTime = Double.parseDouble(editText_pageTarget.getText().toString())
+                            / Double.parseDouble(editText_timeTarget.getText().toString());
+                    final int pageTotal = Integer.parseInt(editText_pageTotal.getText().toString());
+                    final ToDoData toAddToDoData = new ToDoData(editText.getText().toString(),
+                            pageTotal, pagePerTime, unitTime, editText_pageName.getText().toString(), switch_isStep.isChecked());
+
+                    customIO.Save(toAddToDoData.streamData());
+                }
                 onBackPressed();
             }
         });

@@ -6,20 +6,14 @@ import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-public class DoListViewHolder extends RecyclerView.ViewHolder {
+public class ToDoViewHolder extends RecyclerView.ViewHolder {
 
     public Button button;
-    public TextView textView;
 
-    public DoListViewHolder(View itemLayoutView) {
+    public ToDoViewHolder(View itemLayoutView) {
         super(itemLayoutView);
 
-        textView = (TextView) itemLayoutView.findViewById(R.id.item_textView);
         button = (Button) itemLayoutView.findViewById(R.id.item_button);
     }
 
-
-    public TextView getTextView() {
-        return textView;
-    }
 }

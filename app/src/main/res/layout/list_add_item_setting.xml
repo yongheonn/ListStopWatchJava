@@ -8,7 +8,7 @@
     android:padding="@dimen/box_inset_layout_padding"
     tools:context=".AddItemSettingActivity"
     tools:deviceIds="wear">
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent">
     <LinearLayout
@@ -53,16 +53,17 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:singleLine="true"
-            android:hint="추가할 항목 이름">
+            android:hint="이름">
 
         </EditText>
 
         <LinearLayout
-            android:id="@+id/add_itemOnly"
+            android:id="@+id/add_toDoOnly"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:layout_gravity="center_horizontal"
+            android:paddingBottom="20dp"
             android:visibility="gone">
             <EditText
                 android:id="@+id/add_editText_pageTotal"
@@ -71,7 +72,7 @@
                 android:singleLine="true"
                 android:inputType="number"
                 android:digits="0123456789"
-                android:hint="추가할 항목의 분량">
+                android:hint="분량">
 
             </EditText>
             <EditText
@@ -86,7 +87,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="추가할 항목의 목표 속도"
+                android:text="하루 목표 속도"
                 >
 
             </TextView>
@@ -163,17 +164,24 @@
                 </Button>
                 </LinearLayout>
             </LinearLayout>
+            <Switch
+                android:id="@+id/add_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="페이지 Step"
+                android:checked="true">
+            </Switch>
         </LinearLayout>
 
         <Button
             android:id="@+id/add_confirm"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@drawable/category_add_background"
+            android:background="@drawable/green_corner_background"
             android:layout_gravity="center_horizontal"
             android:text="확인">
         </Button>
 
     </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 </androidx.wear.widget.BoxInsetLayout>

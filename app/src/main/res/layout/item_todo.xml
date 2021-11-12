@@ -5,23 +5,15 @@
     android:layout_marginLeft="@dimen/margin_medium"
     android:layout_marginRight="@dimen/margin_medium"
 
-    android:background="@drawable/category_background"
+    android:background="@drawable/orange_corner_background"
     >
 
     <Button
-        android:id="@+id/category_button"
+        android:id="@+id/item_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
         >
 
     </Button>
-    <TextView
-        android:id="@+id/category_textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/element_text"
-        android:layout_gravity="center"
-        >
-    </TextView>
 </FrameLayout>
