@@ -87,15 +87,10 @@ public class CategorySettingActivity extends WearableActivity {
                 String addUnitTime = unitTime.getSelectedItem().toString();
                 adapter.addItem(addPageTarget, addPageName, addUnitTime);
 
-                selectedPosition = -1;
                 list.setSelected(false);
                 pageTarget.setText(null);
-                pageName.setSelected(false);
-                unitTime.setSelected(false);
-                saveBtn.setEnabled(true);
-                addBtn.setEnabled(false);
-                deleteBtn.setEnabled(false);
-                editBtn.setEnabled(false);
+                pageName.setSelection(0);
+                unitTime.setSelection(0);
             }
         });
 
@@ -107,12 +102,8 @@ public class CategorySettingActivity extends WearableActivity {
                 pageTarget.setText(null);
                 selectedPosition = -1;
                 list.setSelected(false);
-                pageName.setSelected(false);
-                unitTime.setSelected(false);
-                saveBtn.setEnabled(true);
-                addBtn.setEnabled(false);
-                deleteBtn.setEnabled(false);
-                editBtn.setEnabled(false);
+                pageName.setSelection(0);
+                unitTime.setSelection(0);
             }
         });
 
@@ -127,12 +118,8 @@ public class CategorySettingActivity extends WearableActivity {
                 pageTarget.setText(null);
                 selectedPosition = -1;
                 list.setSelected(false);
-                pageName.setSelected(false);
-                unitTime.setSelected(false);
-                saveBtn.setEnabled(true);
-                addBtn.setEnabled(false);
-                deleteBtn.setEnabled(false);
-                editBtn.setEnabled(false);
+                pageName.setSelection(0);
+                unitTime.setSelection(0);
             }
         });
 
@@ -141,8 +128,6 @@ public class CategorySettingActivity extends WearableActivity {
             public void onClick(View v) {
                 list.setSelected(false);
                 selectedPosition = -1;
-                deleteBtn.setEnabled(false);
-                editBtn.setEnabled(false);
             }
         });
 
@@ -182,7 +167,14 @@ public class CategorySettingActivity extends WearableActivity {
 
         unitTime.setAdapter(unitTimeAdapter);
 
-        adapter = new DailyTargetListAdapter(new TouchListener());
+        ArrayList<Integer> pageTarget2 = categoryData.dailyTarget.get(categoryData.dailyTarget.size() - 1)
+                .pageTarget;
+        ArrayList<String> pageName2 = categoryData.dailyTarget.get(categoryData.dailyTarget.size() - 1)
+                .pageName;
+        ArrayList<String> unitTime2 = categoryData.dailyTarget.get(categoryData.dailyTarget.size() - 1)
+                .unitTime;
+
+        adapter = new DailyTargetListAdapter(pageTarget2, pageName2, unitTime2, new TouchListener());
 
         list.setLayoutManager(new LinearLayoutManager(this));
         list.setAdapter(adapter);

@@ -48,6 +48,8 @@ public class SpinnerAdapter extends ArrayAdapter {
 
         itemText.setText(data.get(position));
 
+        itemText.setTextSize(15);
+
         return layout;
     }
 

@@ -20,7 +20,8 @@
             android:layout_gravity="right"
             android:layout_margin="15dp"
             android:scaleType="fitXY"
-            android:src="@drawable/setting_icon">
+            android:src="@drawable/setting_icon"
+            android:background="@android:color/transparent">
 
         </ImageButton>
 

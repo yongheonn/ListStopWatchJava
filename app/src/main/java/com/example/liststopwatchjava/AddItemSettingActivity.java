@@ -121,6 +121,7 @@ public class AddItemSettingActivity extends WearableActivity {
 
                     customIO.Save(toAddToDoData.streamData());
                 }
+                isAdd = true;
                 onBackPressed();
             }
         });
