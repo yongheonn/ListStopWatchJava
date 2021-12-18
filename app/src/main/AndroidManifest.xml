@@ -31,6 +31,9 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".MainSettingActivity">
+        </activity>
+        <activity
             android:name=".AddItemSettingActivity">
         </activity>
         <activity
