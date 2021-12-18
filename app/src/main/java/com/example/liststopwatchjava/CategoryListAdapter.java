@@ -5,18 +5,20 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
+public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
+        implements ItemTouchHelperListener{
     private CategoryData categoryData;
     private OnItemClickListener mOnItemClickListener;
     private final int TYPE_HEADER = 0;
     private final int TYPE_ADD = 1;
     private final int TYPE_CATEGORY = 2;
     private final int TYPE_ITEM = 3;
+    private boolean canDrag;
 
     public interface OnItemClickListener {
         public void onTitleClick();
@@ -28,6 +30,12 @@ public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         public void onToDoClick(int position);
 
         public void onAddClick(int position);
+
+        public void onLongClick(Button button);
+
+        public void onCategoryDelete(int _position);
+
+        public void onToDoDelete(int _position);
     }
 
     public CategoryListAdapter(CategoryData _categoryData, OnItemClickListener onItemClickListener) {
@@ -57,24 +65,20 @@ public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
         if (viewHolder instanceof ToDoViewHolder) {
-            final int index = categoryData.sequence.get(position);
-            ((ToDoViewHolder) viewHolder).button.setText(categoryData.toDoData
-                    .get(index).name);
+            ((ToDoViewHolder) viewHolder).button.setText(categoryData.loadToDo(position - 1).getName());
         }
         else if(viewHolder instanceof CategoryViewHolder) {
-            final int index = categoryData.sequence.get(position);
-            ((CategoryViewHolder) viewHolder).button.setText(categoryData.categoryData
-                    .get(index).name);
+            ((CategoryViewHolder) viewHolder).button.setText(categoryData.loadCategory(position - 1).getName());
         }
         else if(viewHolder instanceof TitleViewHolder) {
-            ((TitleViewHolder) viewHolder).textView.setText(categoryData.name);
+            ((TitleViewHolder) viewHolder).textView.setText(categoryData.getName());
         }
     }
 
     // Return the size of your dataset (invoked by the layout manager)
     @Override
     public int getItemCount() {
-        return categoryData.sequence.size() + 1;
+        return categoryData.itemSize() + 2;
     }
 
     @Override
@@ -88,16 +92,41 @@ public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
         return TYPE_ITEM;
     }
 
-    private boolean isPositionHeader(int position) {
-        return position == 0;
+    @Override
+    public boolean canDrag()
+    {
+        return canDrag;
     }
 
-    private boolean isPositionAdd(int position) {
-        return position == getItemCount() - 1;
+    @Override
+    public boolean onItemMove(int _from, int _to) {
+        if(isPositionAdd(_to)) {
+            categoryData.swapItem(_from - 1, _to - 2);
+            notifyItemMoved(_from, _to - 1);
+            return true;
+        }
+        else if(isPositionHeader(_to)) {
+            categoryData.swapItem(_from - 1, _to);
+            notifyItemMoved(_from, _to + 1);
+            return true;
+        }
+        else {
+            categoryData.swapItem(_from - 1, _to - 1);
+            notifyItemMoved(_from, _to);
+            return true;
+        }
     }
 
-    private boolean isPositionCategory(int position) {
-        if(categoryData.sequence.isCategory(position))
+    private boolean isPositionHeader(int _position) {
+        return _position == 0;
+    }
+
+    private boolean isPositionAdd(int _position) {
+        return _position == getItemCount() - 1;
+    }
+
+    private boolean isPositionCategory(int _position) {
+        if(categoryData.isItemCategory(_position - 1))
             return true;
         return false;
     }
@@ -153,6 +182,15 @@ public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
             }
         });
 
+        viewHolder.button.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                canDrag = false;
+                return false;
+            }
+        });
+
         viewHolder.textView.setSelected(true);
 
         viewHolder.setting.setOnClickListener(new View.OnClickListener() {
@@ -169,7 +207,25 @@ public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             @Override
             public void onClick(View v) {
-                mOnItemClickListener.onToDoClick(viewHolder.getAdapterPosition());
+                mOnItemClickListener.onToDoClick(viewHolder.getAdapterPosition() - 1);
+            }
+        });
+        viewHolder.button.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                canDrag = true;
+                viewHolder.deleteButton.setEnabled(true);
+                viewHolder.deleteButton.setVisibility(View.VISIBLE);
+                mOnItemClickListener.onLongClick(viewHolder.deleteButton);
+                return true;
+            }
+        });
+        viewHolder.deleteButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                mOnItemClickListener.onToDoDelete(viewHolder.getAdapterPosition() - 1);
             }
         });
     }
@@ -179,7 +235,25 @@ public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             @Override
             public void onClick(View v) {
-                mOnItemClickListener.onCategoryClick(viewHolder.getAdapterPosition());
+                mOnItemClickListener.onCategoryClick(viewHolder.getAdapterPosition() - 1);
+            }
+        });
+        viewHolder.button.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                canDrag = true;
+                viewHolder.deleteButton.setEnabled(true);
+                viewHolder.deleteButton.setVisibility(View.VISIBLE);
+                mOnItemClickListener.onLongClick(viewHolder.deleteButton);
+                return true;
+            }
+        });
+        viewHolder.deleteButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                mOnItemClickListener.onCategoryDelete(viewHolder.getAdapterPosition() - 1);
             }
         });
     }
@@ -189,7 +263,15 @@ public class CategoryListAdapter extends RecyclerView.Adapter<RecyclerView.ViewH
 
             @Override
             public void onClick(View v) {
-                mOnItemClickListener.onAddClick(viewHolder.getAdapterPosition());
+                mOnItemClickListener.onAddClick(viewHolder.getAdapterPosition() - 1);
+            }
+        });
+        viewHolder.button.setOnLongClickListener(new View.OnLongClickListener() {
+
+            @Override
+            public boolean onLongClick(View v) {
+                canDrag = false;
+                return false;
             }
         });
     }

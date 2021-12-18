@@ -37,6 +37,9 @@
             android:name=".ToDoActivity">
         </activity>
         <activity
+            android:name=".ToDoInfoActivity">
+        </activity>
+        <activity
             android:name=".CategoryInfoActivity">
         </activity>
         <activity

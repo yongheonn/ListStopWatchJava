@@ -17,25 +17,13 @@ public class PercentageViewHolder extends RecyclerView.ViewHolder {
         percentageProgress = (TextView) itemLayoutView.findViewById(R.id.percentage_progress);
     }
 
-    public void setPercentage(int _pageProgress, int _page, double _time, String _pageName, String _unitTime) {
-        double percentage = (double)_pageProgress / (double)_page;
+    public void setPercentage(double _percentage, String _info) {
 
-        String info = "( " + _pageProgress + " / " + _page + " ) " + _pageName + "\n" + (int)(percentage * 100)
-                + "%\n" + getUnitTime(_time, _unitTime) + _unitTime;
-        percentageBar.setText(info);
-        if(percentage <= 1)
-            percentageProgress.setWidth((int)(percentageBar.getWidth() * percentage));
+        percentageBar.setText(_info);
+        if(_percentage <= 1)
+            percentageProgress.setWidth((int)(percentageBar.getWidth() * _percentage));
         else
             percentageProgress.setWidth(percentageBar.getWidth());
-    }
-
-    private double getUnitTime(double _time, String _unitTime) {
-        if(_unitTime.equals("시간"))
-            return _time / 1000 / 60 / 60;
-        if(_unitTime.equals("분"))
-            return _time / 1000 / 60;
-        if(_unitTime.equals("초"))
-            return _time / 1000;
-        return _time;
+        percentageProgress.setHeight(percentageBar.getHeight());
     }
 }

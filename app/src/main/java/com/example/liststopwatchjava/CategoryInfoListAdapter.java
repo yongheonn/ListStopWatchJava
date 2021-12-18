@@ -7,12 +7,14 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import java.time.LocalDate;
+
 public class CategoryInfoListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-    private DailyTarget data;
+    private DailyData data;
     private final int TYPE_HEADER = 0;
     private final int TYPE_ITEM = 1;
 
-    public CategoryInfoListAdapter(DailyTarget _data) {
+    public CategoryInfoListAdapter(DailyData _data) {
         data = _data;
     }
 
@@ -28,23 +30,17 @@ public class CategoryInfoListAdapter extends RecyclerView.Adapter<RecyclerView.V
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder viewHolder, int position) {
         if(viewHolder instanceof  TotalPercentageVH) {
-            ((TotalPercentageVH) viewHolder).setTotalPercentage(data.page, data.pageTarget
-                    , data.time, data.unitTime);
+            ((TotalPercentageVH) viewHolder).setTotalPercentage(data.totalPercentage(), data.totalInfo());
         }
         if (viewHolder instanceof PercentageViewHolder) {
-            int pageProgress = data.page.get(position - 1);
-            int pageTotal = data.pageTarget.get(position - 1);
-            double time = data.time.get(position - 1);
-            String pageName = data.pageName.get(position - 1);
-            String unitTime = data.unitTime.get(position - 1);
-            ((PercentageViewHolder) viewHolder).setPercentage(pageProgress, pageTotal, time
-            , pageName, unitTime);
+            ((PercentageViewHolder) viewHolder).setPercentage(data.percentage(position - 1)
+                    , data.info(position - 1));
         }
     }
 
     @Override
     public int getItemCount() {
-        return data.pageName.size() + 1;
+        return data.getTargetSize() + 1;
     }
 
     @Override
@@ -53,6 +49,12 @@ public class CategoryInfoListAdapter extends RecyclerView.Adapter<RecyclerView.V
             return TYPE_HEADER;
         return TYPE_ITEM;
     }
+
+    public void setData(DailyData _data) {
+        data = _data;
+    }
+
+    public LocalDate getDate() { return data.getDate(); }
 
     private boolean isPositionHeader(int position) {
         if (position == 0)

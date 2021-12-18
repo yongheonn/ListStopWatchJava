@@ -9,11 +9,23 @@
     >
 
     <Button
-        android:id="@+id/item_button"
+        android:id="@+id/item_todo_button"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@android:color/transparent"
         >
+
+    </Button>
+
+    <Button
+        android:id="@+id/item_todo_deleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:text="삭제"
+        android:layout_gravity="right"
+        android:background="@drawable/red_half_corner_background"
+        android:enabled="false"
+        android:visibility="gone">
 
     </Button>
 </FrameLayout>

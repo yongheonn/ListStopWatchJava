@@ -28,7 +28,7 @@ public class IntentId {
             _receivedIntentId.add(0);
         }
 
-        return  _receivedIntentId;
+        return _receivedIntentId;
     }
 
     private ArrayList<Integer> receiveIntentId() {

@@ -1,266 +1,871 @@
 package com.example.liststopwatchjava;
 
-import android.os.SystemClock;
-
-import java.text.SimpleDateFormat;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
-import java.util.Date;
-import java.util.Locale;
 
 public class CategoryData {
-    public String name;
-    public ArrayList<DailyTarget> dailyTarget;
-    public ArrayList<CategoryData> categoryData;
-    public ArrayList<ToDoData> toDoData;
-    public Sequence sequence;
-    //CATEGORY : 양의 정수, 정수값이 categoryData 인덱스
-    //TODO : 음의 정수, 정수값의 절대값이 toDoData 인덱스
+    private String name;
+    private ArrayList<DailyData> dailyData;
+    private ArrayList<ItemType> itemList;
+    private ArrayList<Integer> id;
+    private int categorySize;
+    private int toDoSize;
+    private File mDir;
+    private File mFile;
 
-    CategoryData() {
+    CategoryData(File _filesDir, ArrayList<Integer> _id) {
         name = null;
-        dailyTarget = new ArrayList<DailyTarget>();
-        categoryData = new ArrayList<CategoryData>();
-        toDoData = new ArrayList<ToDoData>();
-        sequence = new Sequence();
+        dailyData = new ArrayList<DailyData>();
+        itemList = new ArrayList<ItemType>();
+        id = new ArrayList<Integer>();
+        categorySize = 0;
+        toDoSize = 0;
+        dailyData.add(new DailyData());
+
+        convertIdToFile(_filesDir, _id);
     }
 
-    CategoryData(String _name) {
+    CategoryData(String _name, File _filesDir, ArrayList<Integer> _id) {
         name = _name;
-        dailyTarget = new ArrayList<DailyTarget>();
-        categoryData = new ArrayList<CategoryData>();
-        toDoData = new ArrayList<ToDoData>();
-        sequence = new Sequence();
+        dailyData = new ArrayList<DailyData>();
+        itemList = new ArrayList<ItemType>();
+        id = new ArrayList<Integer>();
+        categorySize = 0;
+        toDoSize = 0;
+        dailyData.add(new DailyData());
+
+        convertIdToFile(_filesDir, _id);
     }
 
-    CategoryData(String _name, DailyTarget _dailyTarget) {
+    CategoryData(String _name, DailyData _dailyTarget, File _filesDir, ArrayList<Integer> _id) {
         name = _name;
-        dailyTarget = new ArrayList<DailyTarget>();
-        dailyTarget.add(_dailyTarget);
-        categoryData = new ArrayList<CategoryData>();
-        toDoData = new ArrayList<ToDoData>();
-        sequence = new Sequence();
+        dailyData = new ArrayList<DailyData>();
+        dailyData.add(_dailyTarget);
+        itemList = new ArrayList<ItemType>();
+        id = new ArrayList<Integer>();
+        categorySize = 0;
+        toDoSize = 0;
+        dailyData.add(new DailyData());
+
+        convertIdToFile(_filesDir, _id);
     }
 
     public void reset() {
         name = null;
-        dailyTarget.clear();
-        categoryData.clear();
-        toDoData.clear();
-        sequence.reset();
+        dailyData.clear();
+        itemList.clear();
+        categorySize = 0;
+        toDoSize = 0;
     }
 
     public void clear() {
         name = null;
-        dailyTarget.clear();
-        categoryData.clear();
-        toDoData.clear();
-        sequence.clear();
+        dailyData.clear();
+        dailyData.add(new DailyData());
+        itemList.clear();
+        categorySize = 0;
+        toDoSize = 0;
     }
 
-    public String streamData() {
-
-        String stream = name + "\n" + dailyTarget.size() + "\n" + categoryData.size()
-                + "\n" + toDoData.size();
-        for (int i = 0; i < dailyTarget.size(); i++) {
-            stream += dailyTarget.get(i).streamData();
-        }
-        stream += sequence.streamData();
-        return stream;
+    public boolean isItemCategory(int _index) {
+        return itemList.get(_index) == ItemType.CATEGORY;
     }
 
-    public void updateTarget(int _page, double _time, String _pageName) {
-        dailyTarget.add(dailyTarget.get(dailyTarget.size() - 1).updateTarget(_page, _time, _pageName));
+    public boolean isItemToDo(int _index) {
+        return itemList.get(_index) == ItemType.TODO;
     }
 
-    public void loadData(String _name, ArrayList<DailyTarget> _dailyTarget,
-                         ArrayList<CategoryData> _categoryData, ArrayList<ToDoData> _toDoData,
-                         Sequence _sequence) {
-        clear();
+    public DailyData getRearDaily() {
+        if (dailyData.size() > 0)
+            return dailyData.get(dailyData.size() - 1);
+        return new DailyData();
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String _name) {
         name = _name;
-        dailyTarget.addAll(_dailyTarget);
-        categoryData.addAll(_categoryData);
-        toDoData.addAll(_toDoData);
-        sequence.addAll(_sequence);
     }
 
-    public void updateData(CategoryData data) {
-    }
-}
-
-class Sequence {
-    private ArrayList<Integer> index;
-
-    Sequence() {
-        index = new ArrayList<Integer>();
-        index.add(0);
+    public int itemSize() {
+        return itemList.size();
     }
 
-    public void reset() {
-        index.clear();
-        index.add(0);
+    public ArrayList<Integer> rearDailyPageTarget() {
+        if (dailyData.size() > 0)
+            return dailyData.get(dailyData.size() - 1).getPageTarget();
+        return new ArrayList<Integer>();
     }
 
-    public void clear() {
-        index.clear();
+    public ArrayList<String> rearDailyPageName() {
+        if (dailyData.size() > 0)
+            return dailyData.get(dailyData.size() - 1).getPageNameTarget();
+        return new ArrayList<String>();
     }
 
-    public boolean isCategory(int _index) {
-        if (index.get(_index) > 0)
-            return true;
-        return false;
+    public ArrayList<String> rearDailyUnitTime() {
+        if (dailyData.size() > 0)
+            return dailyData.get(dailyData.size() - 1).getUnitTimeTarget();
+        return new ArrayList<String>();
     }
 
-    public boolean isToDo(int _index) {
-        if (index.get(_index) < 0)
-            return true;
-        return false;
-    }
+    public ArrayList<String> getPageNameList() {
+        ArrayList<String> pageNameList = new ArrayList<String>();
+        for (int i = 0; i < itemSize(); i++) {
+            ArrayList<Integer> itemId = new ArrayList<Integer>();
+            itemId.addAll(id);
+            itemId.add(i);
+            if (itemList.get(i) == ItemType.TODO) {
+                ToDoData toDoData = new ToDoData(mDir, itemId);
+                toDoData.load();
+                if (!pageNameList.contains(toDoData.getPageName()))
+                    pageNameList.add(toDoData.getPageName());
+            } else {
+                CategoryData categoryData = new CategoryData(mDir, itemId);
+                categoryData.load();
 
-    public String streamData() {
-        String stream = "";
-        for (int i  = 1; i < index.size(); i++) {
-            stream += "\n" + index.get(i);
+                for (String s : categoryData.getPageNameList()) {
+                    if (!pageNameList.contains(s))
+                        pageNameList.add(s);
+                }
+            }
         }
-        return stream;
+
+        return pageNameList;
     }
 
-    public int size() {
-        return index.size();
+    public void updateDaily(int _page, long _time, String _pageName) {
+        if(dailyData.get(dailyData.size() - 1).getDate().isEqual(LocalDate.now()))
+            dailyData.get(dailyData.size() - 1).updateDaily(_page, _time, _pageName);
+        else {
+            dailyData.add(new DailyData(dailyData.get(dailyData.size() - 1)));
+            dailyData.get(dailyData.size() - 1).updateDaily(_page, _time, _pageName);
+        }
+        save();
     }
 
-    public void add(int data) {
-        index.add(data);
+    public void updateDaily(int _beforePage, long _beforeTime, int _afterPage
+            , long _afterTime, String _pageName) {
+        DailyData rearDaily = dailyData.get(dailyData.size() - 1);
+        if(dailyData.get(dailyData.size() - 1).getDate().isEqual(LocalDate.now())) {
+            rearDaily.updateDaily(_beforePage, _beforeTime, _pageName);
+            dailyData.add(new DailyData(rearDaily));
+            rearDaily = dailyData.get(dailyData.size() - 1);
+            rearDaily.updateDaily(_afterPage, _afterTime, _pageName);
+        }
+        else {
+            dailyData.add(new DailyData(rearDaily));
+            rearDaily = dailyData.get(dailyData.size() - 1);
+            rearDaily.updateDaily(_beforePage, _beforeTime, _pageName);
+            dailyData.add(new DailyData(rearDaily));
+            rearDaily = dailyData.get(dailyData.size() - 1);
+            rearDaily.updateDaily(_afterPage, _afterTime, _pageName);
+        }
+        save();
     }
 
-    public void addAll(Sequence _sequence) {
-        index.addAll(_sequence.index);
+    public void swapItem(int _from, int _to) {
+        if(isItemCategory(_from)) {
+            CategoryData fromData = loadCategory(_from);
+            if(isItemCategory(_to)) {
+                CategoryData toData = loadCategory(_to);
+                fromData.rename(id.size(), -1);
+                toData.rename(id.size(), _from);
+                fromData.rename(id.size(), _to);
+            }
+            else {
+                ToDoData toData = loadToDo(_to);
+                fromData.rename(id.size(), -1);
+                toData.rename(_from);
+                fromData.rename(id.size(), _to);
+            }
+        }
+        else {
+            ToDoData fromData = loadToDo(_from);
+            if(isItemCategory(_to)) {
+                CategoryData toData = loadCategory(_to);
+                fromData.rename(-1);
+                toData.rename(id.size(), _from);
+                fromData.rename(_to);
+            }
+            else {
+                ToDoData toData = loadToDo(_to);
+                fromData.rename(-1);
+                toData.rename(_from);
+                fromData.rename(_to);
+            }
+        }
+        Collections.swap(itemList, _from, _to);
+        save();
     }
 
-    public int get(int _index) {
-        return Math.abs(index.get(_index)) - 1;
+    public void addCategory(String _name) {
+        CategoryData categoryData = new CategoryData(_name, mDir, newItemId());
+        itemList.add(ItemType.CATEGORY);
+        categorySize++;
+        categoryData.save();
+        save();
     }
 
-    public void addCategory() {
-        index.add(Collections.max(index) + 1);
+    public void addToDo(String _name, int _page_total, double _pagePerTime_target,
+                        String _unitTime, String _pageName, boolean _isStep) {
+        try {
+            ToDoData toDoData = new ToDoData(_name, _page_total, _pagePerTime_target
+                    , _unitTime, _pageName, _isStep, mDir, newItemId());
+            itemList.add(ItemType.TODO);
+            toDoSize++;
+            toDoData.save();
+            updateAllDaily();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public void addToDo() {
-        index.add(Collections.min(index) - 1);
+    public void deleteCategory(int _index) {
+        CategoryData categoryData = loadCategory(_index);
+        categoryData.delete();
+        for (int i = _index + 1; i < itemSize(); i++) {
+            if (itemList.get(i) == ItemType.CATEGORY) {
+                CategoryData data = loadCategory(i);
+                data.rename(id.size(), i - 1);
+            } else {
+                ToDoData data = loadToDo(i);
+                data.rename(id.size(), i - 1);
+            }
+        }
+        itemList.remove(_index);
+        categorySize--;
+        save();
+
+        load();
+        updateAllDaily();
+        save();
+
     }
-}
 
-class DailyTarget {
-    public ArrayList<Integer> page;
-    public ArrayList<Integer> pageTarget;
-    public ArrayList<Double> time;
-    public ArrayList<String> unitTime;
-    public ArrayList<String> pageName;
-    public Date date;
-
-    DailyTarget() {
-        page = new ArrayList<Integer>();
-        pageTarget = new ArrayList<Integer>();
-        time = new ArrayList<Double>();
-        unitTime = new ArrayList<String>();
-        pageName = new ArrayList<String>();
-        date = new Date();
+    public void deleteToDo(int _index) {
+        ToDoData toDoData = new ToDoData(mDir, itemId(_index));
+        toDoData.load();
+        toDoData.delete();
+        for (int i = _index + 1; i < itemSize(); i++) {
+            if (itemList.get(i) == ItemType.CATEGORY) {
+                CategoryData data = new CategoryData(mDir, itemId(i));
+                data.load();
+                data.rename(id.size(), i - 1);
+            } else {
+                ToDoData data = new ToDoData(mDir, itemId(i));
+                data.load();
+                data.rename(id.size(), i - 1);
+            }
+        }
+        itemList.remove(_index);
+        toDoSize--;
+        save();
+        load();
+        updateAllDaily();
+        save();
     }
 
-    DailyTarget(ArrayList<Integer> _pageTarget, ArrayList<String> _pageName
+    public void updateAllDaily() {
+        ArrayList<Integer> tempId = new ArrayList<Integer>();
+        tempId.addAll(id);
+        dailyData.get(dailyData.size() - 1).updatePageNameList(getPageNameList());
+        save();
+        while (tempId.size() > 2) {
+            tempId.remove(tempId.size() - 1);
+            CategoryData categoryData = new CategoryData(mDir, tempId);
+            categoryData.load();
+            categoryData.dailyData.get(categoryData.dailyData.size() - 1).updatePageNameList(categoryData.getPageNameList());
+            categoryData.save();
+        }
+    }
+
+    public void addDailyTarget(ArrayList<Integer> _pageTarget, ArrayList<String> _pageName
             , ArrayList<String> _unitTime) {
-        page = new ArrayList<Integer>();
-        pageTarget = new ArrayList<Integer>();
-        time = new ArrayList<Double>();
-        unitTime = new ArrayList<String>();
-        pageName = new ArrayList<String>();
-        date = new Date(System.currentTimeMillis());
+        dailyData.get(dailyData.size() - 1).updateTarget(_pageTarget, _pageName, _unitTime);
+        save();
+    }
 
-        pageTarget.addAll(_pageTarget);
-        pageName.addAll(_pageName);
-        unitTime.addAll(_unitTime);
-        for(int i = 0; i < _pageName.size(); i++) {
-            page.add(0);
-            time.add(0.0);
+    public CategoryData loadCategory(int _index) {
+        CategoryData categoryData = new CategoryData(mDir, itemId(_index));
+        categoryData.load();
+        return categoryData;
+    }
+
+    public ToDoData loadToDo(int _index) {
+        ToDoData toDoData = new ToDoData(mDir, itemId(_index));
+        toDoData.load();
+        return toDoData;
+    }
+
+    public void rename(int _pos, int _index) {
+        for(int i = 0; i < itemSize(); i++) {
+            if(isItemCategory(i)) {
+                CategoryData data = loadCategory(i);
+                data.rename(_pos, _index);
+            }
+            else {
+                ToDoData data = loadToDo(i);
+                data.rename(_pos, _index);
+            }
+        }
+        id.set(_pos, _index);
+        String file = "";
+        for (int i : id)
+            file += "_" + i;
+        if (mFile.exists()) {
+            mFile.renameTo(new File(mDir + "/resources/" + file));
+            mFile = new File(mDir + "/resources/" + file);
         }
     }
 
-    DailyTarget(ArrayList<Integer> _page, ArrayList<Integer> _pageTarget
-            , ArrayList<Double> _time, ArrayList<String> _unitTime
-            , ArrayList<String> _pageName, Date _date) {
-        page = new ArrayList<Integer>();
-        pageTarget = new ArrayList<Integer>();
-        time = new ArrayList<Double>();
-        unitTime = new ArrayList<String>();
-        pageName = new ArrayList<String>();
-        date = new Date();
+    public void delete() {
+        ArrayList<Integer> tempId = new ArrayList<Integer>();
+        tempId.addAll(id);
+        while (tempId.size() > 2) {
+            tempId.remove(tempId.size() - 1);
+            CategoryData categoryData = new CategoryData(mDir, tempId);
+            categoryData.load();
+            categoryData.exceptToDoDaily(dailyData);
+            categoryData.save();
+        }
+        deleteCategoryFile();
+        deleteFile();
+    }
 
-        page.addAll(_page);
-        pageTarget.addAll(_pageTarget);
-        time.addAll(_time);
-        unitTime.addAll(_unitTime);
-        pageName.addAll(_pageName);
+    public void deleteCategoryFile() {
+        for (int i = 0; i < itemSize(); i++) {
+            if (itemList.get(i) == ItemType.CATEGORY) {
+                CategoryData categoryData = new CategoryData(mDir, itemId(i));
+                categoryData.load();
+                categoryData.deleteCategoryFile();
+                categoryData.deleteFile();
+            } else {
+                ToDoData toDoData = new ToDoData(mDir, itemId(i));
+                toDoData.load();
+                toDoData.deleteFile();
+            }
+        }
+    }
+
+    public void deleteFile() {
+        if (mFile.exists())
+            mFile.delete();
+    }
+
+    public void exceptToDoDaily(ArrayList<DailyData> _dailyData) {
+        int day = 0;
+        for (DailyData d : dailyData) {
+            for (int i = day; i < _dailyData.size(); i++) {
+                if (d.isDoDay(_dailyData.get(i).getDate())) {
+                    d.exceptDeleteData(_dailyData.get(i).getTime(), _dailyData.get(i).getPage()
+                            , _dailyData.get(i).getPageName());
+                    day++;
+                    break;
+                }
+            }
+        }
+    }
+
+    public void exceptToDoDaily(ArrayList<Long> _time, ArrayList<Integer> _page,
+                                ArrayList<LocalDate> _date, String _pageName) {
+        int day = 0;
+        for (DailyData d : dailyData) {
+            for (int i = day; i < _date.size(); i++) {
+                if (d.isDoDay(_date.get(i))) {
+                    d.exceptDeleteData(_time.get(i), _page.get(i), _pageName);
+                    day++;
+                    break;
+                }
+            }
+        }
+    }
+
+    public DailyData dailyContain(LocalDate _date) {
+        for(int i = 0; i < dailyData.size(); i++) {
+            if(dailyData.get(i).isDoDay(_date))
+                return dailyData.get(i);
+            else if(dailyData.get(i).isDayAfter(_date)) {
+                if(i == 0)
+                    return new DailyData(_date);
+                else
+                    return new DailyData(dailyData.get(i - 1), _date);
+            }
+        }
+        return new DailyData(getRearDaily(), _date);
+    }
+
+    public void save() {
+        try {
+            BufferedWriter writer = new BufferedWriter(
+                    new FileWriter(mFile, false));
+
+            writer.append(streamData() + "\n");
+            writer.flush();
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void load() {
+        clear();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(mFile));
+            name = reader.readLine();
+            if (name != null) {
+
+                int dailySize = Integer.parseInt(reader.readLine());
+                categorySize = Integer.parseInt(reader.readLine());
+                toDoSize = Integer.parseInt(reader.readLine());
+                int itemSize = categorySize + toDoSize;
+
+                dailyData.get(0).load(reader);
+                for (int i = 1; i < dailySize; i++) {
+                    dailyData.add(new DailyData());
+                    dailyData.get(i).load(reader);
+                }
+
+                for (int i = 0; i < itemSize; i++)
+                    itemList.add(ItemType.valueOf(reader.readLine()));
+
+            } else {
+                name = "메인 카테고리";
+            }
+            reader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private ArrayList<Integer> newItemId() {
+        ArrayList<Integer> itemId = new ArrayList<Integer>();
+        itemId.addAll(id);
+        itemId.add(itemSize());
+        return itemId;
+    }
+
+    private ArrayList<Integer> itemId(int _index) {
+        ArrayList<Integer> itemId = new ArrayList<Integer>();
+        itemId.addAll(id);
+        itemId.add(_index);
+        return itemId;
+    }
+
+    private void convertIdToFile(File _filesDir, ArrayList<Integer> _id) {
+        mDir = new File(_filesDir.toString());
+        File directory = new File(_filesDir.toString() + "/resources");
+        if (!directory.exists())
+            directory.mkdir();
+
+        String file = "";
+        for (int i : _id)
+            file += "_" + i;
+
+        mFile = new File(directory.toString() + "/" + file);
+
+        if (!mFile.exists()) {
+            try {
+                mFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        id.addAll(_id);
+    }
+
+    private String streamData() {
+        String stream = name + "\n" + dailyData.size() + "\n" + categorySize
+                + "\n" + toDoSize;
+        for (int i = 0; i < dailyData.size(); i++) {
+            stream += dailyData.get(i).streamData();
+        }
+        for (int i = 0; i < itemSize(); i++) {
+            stream += "\n" + itemList.get(i).toString();
+        }
+        return stream;
+    }
+}
+
+class DailyData {
+    private ArrayList<Integer> page;
+    private ArrayList<Long> time;
+    private ArrayList<String> pageName;
+    private DailyTarget target;
+    private LocalDate date;
+    private int size;
+
+    class DailyTarget {
+        private ArrayList<Integer> page;
+        private ArrayList<String> unitTime;
+        private ArrayList<String> pageName;
+        private int size;
+
+        DailyTarget() {
+            page = new ArrayList<Integer>();
+            unitTime = new ArrayList<String>();
+            pageName = new ArrayList<String>();
+            size = 0;
+        }
+
+        public String streamData() {
+            String stream = "\n" + size;
+            for (int i : page)
+                stream += "\n" + i;
+            for (String s : unitTime)
+                stream += "\n" + s;
+            for (String s : pageName)
+                stream += "\n" + s;
+            return stream;
+        }
+
+        public void load(BufferedReader _reader) {
+            try {
+                size = Integer.parseInt(_reader.readLine());
+                for (int i = 0; i < size; i++)
+                    page.add(Integer.parseInt(_reader.readLine()));
+                for (int i = 0; i < size; i++)
+                    unitTime.add(_reader.readLine());
+                for (int i = 0; i < size; i++)
+                    pageName.add(_reader.readLine());
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        public void update(ArrayList<Integer> _page, ArrayList<String> _unitTime, ArrayList<String> _pageName) {
+            assert (_page.size() == _unitTime.size() && _unitTime.size() == _pageName.size());
+            clear();
+            page.addAll(_page);
+            pageName.addAll(_pageName);
+            unitTime.addAll(_unitTime);
+            size = pageName.size();
+        }
+
+        public void addAll(DailyTarget _dailyTarget) {
+            clear();
+            page.addAll(_dailyTarget.page);
+            pageName.addAll(_dailyTarget.pageName);
+            unitTime.addAll(_dailyTarget.unitTime);
+            size = _dailyTarget.size;
+        }
+
+        public void clear() {
+            pageName.clear();
+            page.clear();
+            unitTime.clear();
+            size = 0;
+        }
+    }
+
+    DailyData() {
+        page = new ArrayList<Integer>();
+        time = new ArrayList<Long>();
+        pageName = new ArrayList<String>();
+        target = new DailyTarget();
+        date = LocalDate.now();
+        size = 0;
+    }
+
+    DailyData(LocalDate _date) {
+        page = new ArrayList<Integer>();
+        time = new ArrayList<Long>();
+        pageName = new ArrayList<String>();
+        target = new DailyTarget();
         date = _date;
+        size = 0;
+    }
+
+    DailyData(DailyData _dailydata) {
+        page = new ArrayList<Integer>();
+        time = new ArrayList<Long>();
+        pageName = new ArrayList<String>();
+        target = new DailyTarget();
+
+        for (int i = 0; i < _dailydata.size; i++) {
+            page.add(0);
+            time.add((long) 0);
+        }
+        for (String s : _dailydata.pageName)
+            pageName.add(s);
+        target.addAll(_dailydata.target);
+        date = LocalDate.now();
+        size = _dailydata.size;
+    }
+
+    DailyData(DailyData _dailydata, LocalDate _date) {
+        page = new ArrayList<Integer>();
+        time = new ArrayList<Long>();
+        pageName = new ArrayList<String>();
+        target = new DailyTarget();
+
+        for (int i = 0; i < _dailydata.size; i++) {
+            page.add(0);
+            time.add((long) 0);
+        }
+        for (String s : _dailydata.pageName)
+            pageName.add(s);
+        target.addAll(_dailydata.target);
+        date = _date;
+        size = _dailydata.size;
+    }
+
+    public int getSize() {
+        return size;
+    }
+
+    public int getTargetSize() {
+        return target.size;
+    }
+
+    public boolean isDoDay(LocalDate _date) {
+        return date.isEqual(_date);
+    }
+
+    public boolean isDayBefore(LocalDate _date) {
+        return date.isBefore(_date);
+    }
+
+    public boolean isDayAfter(LocalDate _date) {
+        return date.isAfter(_date);
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public ArrayList<Integer> getPageTarget() {
+        return target.page;
+    }
+
+    public ArrayList<String> getPageNameTarget() {
+        return target.pageName;
+    }
+
+    public ArrayList<String> getUnitTimeTarget() {
+        return target.unitTime;
+    }
+
+    public ArrayList<Long> getTime() {
+        return time;
+    }
+
+    public ArrayList<Integer> getPage() {
+        return page;
+    }
+
+    public ArrayList<String> getPageName() {
+        return pageName;
+    }
+
+    public double percentage(int _index) {
+        return (double) page.get(searchIndex(_index)) / (double) target.page.get(_index);
+    }
+
+    public String info(int _index) {
+        return "( " + page.get(_index) + " / " + target.page.get(_index) + " ) " + pageName.get(_index)
+                + "\n" + (int) (percentage(_index) * 100) + "%\n"
+                + getConvertedTime(_index) + target.unitTime.get(_index);
+    }
+
+    public String infoReset(int _index) {
+        return "( 0" + " / " + target.page.get(_index) + " ) " + pageName.get(_index)
+                + "\n" + "0%\n"
+                + "0" + target.unitTime.get(_index);
+    }
+
+    public double totalPercentage() {
+        int totalPage = 0;
+        int totalPageTarget = 0;
+        for (int i = 0; i < target.size; i++)
+            totalPage += page.get(searchIndex(i));
+        for (int i : target.page)
+            totalPageTarget += i;
+        if (totalPageTarget > 0)
+            return (double) totalPage / (double) totalPageTarget;
+        return 0;
+    }
+
+    public String totalInfo() {
+        String unitTimeType = checkUnitTime();
+        String info = "총합 정보\n" + (int) (totalPercentage() * 100) + "%\n"
+                + String.format("%.1f", convertTotalTime(unitTimeType)) + unitTimeType;
+
+        return info;
+    }
+
+    public void clear() {
+        page.clear();
+        time.clear();
+        pageName.clear();
+        target.clear();
+        size = 0;
     }
 
     public String streamData() {
-        String dateFormat = new SimpleDateFormat("yyyy MM dd EE")
-                .format(date);
-        String stream = "\n" + pageName.size();
+
+        String stream = "\n" + size;
+
         for (int i : page)
             stream += "\n" + i;
-        for (int i : pageTarget)
-            stream += "\n" + i;
-        for (double d : time)
-            stream += "\n" + d;
-        for (String s : unitTime)
-            stream += "\n" + s;
+        for (Long l : time)
+            stream += "\n" + l;
         for (String s : pageName)
             stream += "\n" + s;
-        stream += "\n" + dateFormat;
+        stream += "\n" + date.format(DateTimeFormatter.BASIC_ISO_DATE);
+        stream += target.streamData();
+
         return stream;
     }
 
-    public void loadData(ArrayList<Integer> _page, ArrayList<Integer> _pageTarget
-            , ArrayList<Double> _time, ArrayList<String> _unitTime
-            , ArrayList<String> _pageName, Date _date) {
-        page.addAll(_page);
-        pageTarget.addAll(_pageTarget);
-        time.addAll(_time);
-        unitTime.addAll(_unitTime);
-        pageName.addAll(_pageName);
-        date = _date;
+    public void load(BufferedReader _reader) {
+        clear();
+        try {
+            size = Integer.parseInt(_reader.readLine());
+
+            for (int j = 0; j < size; j++)
+                page.add(Integer.parseInt(_reader.readLine()));
+            for (int j = 0; j < size; j++)
+                time.add(Long.parseLong(_reader.readLine()));
+            for (int j = 0; j < size; j++)
+                pageName.add(_reader.readLine());
+            date = LocalDate.parse(_reader.readLine(), DateTimeFormatter.BASIC_ISO_DATE);
+
+            target.load(_reader);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    public DailyTarget updateTarget(int _page, double _time, String _pageName) {
-        int index = pageName.indexOf(_pageName);
-        Calendar cal = Calendar.getInstance();
-        double now_time = cal.get(cal.HOUR_OF_DAY) * 3600 + cal.get(cal.MINUTE) * 60
-                + cal.get(cal.SECOND);
-        double el_time = _time / 1000 / 60 / 60 + (_time / 1000 / 60) % 60 + (_time / 1000) % 60;
-        if (el_time > now_time) {
-            ArrayList<Integer> afterPage = new ArrayList<Integer>();
-            ArrayList<Double> afterTime = new ArrayList<Double>();
-            time.set(index, time.get(index) + el_time - now_time);
-            int beforePage = (int) (_page * (el_time - now_time) / _time);
-            page.set(index, page.get(index) + beforePage);
-            afterPage.set(index, _page - beforePage);
-            afterTime.set(index, now_time);
-
-            return new DailyTarget(afterPage, pageTarget, afterTime
-                    , unitTime, pageName, new Date(System.currentTimeMillis()));
-        } else {
-            time.set(index, time.get(index) + el_time);
-            page.set(index, page.get(index) + _page);
-            return null;
+    public void exceptDeleteData(ArrayList<Long> _time, ArrayList<Integer> _page, ArrayList<String> _pageName) {
+        for (int i = 0; i < _pageName.size(); i++) {
+            int index = pageName.indexOf(_pageName.get(i));
+            assert index >= 0;
+            time.set(index, time.get(index) - _time.get(i));
+            page.set(index, page.get(index) - _page.get(i));
         }
+    }
+
+    public void exceptDeleteData(long _time, int _page, String _pageName) {
+        int index = pageName.indexOf(_pageName);
+        assert index >= 0;
+        time.set(index, time.get(index) - _time);
+        page.set(index, page.get(index) - _page);
+    }
+
+    public void updateTarget(ArrayList<Integer> _pageTarget, ArrayList<String> _pageName
+            , ArrayList<String> _unitTime) {
+        target.update(_pageTarget, _unitTime, _pageName);
+    }
+
+    public void updateDaily(int _page, long _time, String _pageName) {
+        int index = pageName.indexOf(_pageName);
+        assert index >= 0 : "cant find pageName";
+        page.set(index, page.get(index) + _page);
+        time.set(index, time.get(index) + _time);
+    }
+
+    public void updatePageNameList(ArrayList<String> _pageName) {
+        ArrayList<String> tempPageName = new ArrayList<String>();
+        ArrayList<Integer> tempPage = new ArrayList<Integer>();
+        ArrayList<Long> tempTime = new ArrayList<Long>();
+
+        for (int i = 0; i < size; i++) {
+            if (_pageName.contains(pageName.get(i))) {
+                tempPageName.add(pageName.get(i));
+                tempPage.add(page.get(i));
+                tempTime.add(time.get(i));
+            } else {
+                int index = target.pageName.indexOf(pageName.get(i));
+                assert index >= 0;
+                target.pageName.remove(index);
+                target.page.remove(index);
+                target.unitTime.remove(index);
+                target.size--;
+            }
+        }
+
+        for (int i = 0; i < _pageName.size(); i++) {
+            if (!pageName.contains(_pageName.get(i))) {
+                tempPageName.add(_pageName.get(i));
+                tempPage.add(0);
+                tempTime.add((long) 0);
+            }
+        }
+        pageName.clear();
+        page.clear();
+        time.clear();
+        pageName.addAll(tempPageName);
+        page.addAll(tempPage);
+        time.addAll(tempTime);
+        size = pageName.size();
     }
 
     public boolean isComplete() {
-        for (int i = 0; i < page.size(); i++)
-            if (page.get(i) < pageTarget.get(i))
+        for (int i = 0; i < target.size; i++)
+            if (page.get(searchIndex(i)) < target.page.get(i))
                 return false;
         return true;
+    }
+
+    public String checkUnitTime() {
+        String unitTimeType = "초";
+        for (String s : target.unitTime) {
+            if (s.equals("시간"))
+                unitTimeType = s;
+            else if (s.equals("분") && !unitTimeType.equals("시간"))
+                unitTimeType = s;
+            else if (s.equals("초") && !unitTimeType.equals("시간") && !unitTimeType.equals("분"))
+                unitTimeType = s;
+        }
+        return unitTimeType;
+    }
+
+    private String getConvertedTime(int _index) {
+        double convertedTime = time.get(searchIndex(_index));
+        if (target.unitTime.get(_index).equals("시간"))
+            convertedTime /= 1000 * 60 * 60;
+        if (target.unitTime.get(_index).equals("분"))
+            convertedTime /= 1000 * 60;
+        if (target.unitTime.get(_index).equals("초"))
+            convertedTime /= 1000;
+
+        return String.format("%.1f", convertedTime);
+    }
+
+    private double convertTotalTime(String _unitTimeType) {
+        double totalTime = 0;
+
+        for (int i = 0; i < target.size; i++) {
+            totalTime += time.get(searchIndex(i));
+        }
+
+        if (_unitTimeType.equals("시간"))
+            totalTime /= 1000 * 60 * 60;
+        else if (_unitTimeType.equals("분"))
+            totalTime /= 1000 * 60;
+        else if (_unitTimeType.equals("초"))
+            totalTime /= 1000;
+
+        return totalTime;
+    }
+
+    private int searchIndex(int _index) {
+        return pageName.indexOf(target.pageName.get(_index));
+    }
+
+    private int rearIndex() {
+        return size - 1;
     }
 }

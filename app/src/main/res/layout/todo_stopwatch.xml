@@ -58,11 +58,11 @@
 
             </Button>
             <Button
-                android:id="@+id/todo_resetBtn"
+                android:id="@+id/todo_recordBtn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/orange_corner_background"
-                android:text="초기화"
+                android:text="기록"
                 android:enabled="false"
                 android:visibility="gone"
                 android:layout_margin="3dp">

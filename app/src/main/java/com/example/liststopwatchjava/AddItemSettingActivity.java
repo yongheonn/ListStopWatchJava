@@ -16,16 +16,18 @@ import androidx.recyclerview.widget.RecyclerView;
 import static com.example.liststopwatchjava.MainActivity.CONTEXT;
 
 public class AddItemSettingActivity extends WearableActivity {
-    private CustomIO.IOType intentType = CustomIO.IOType.CATEGORY;
+    private ItemType itemType = ItemType.CATEGORY;
     private String unitTime = "초";
     private boolean isAdd = false;
+    IntentId intentId;
+    CategoryData categoryData;
 
     @Override
     public void onBackPressed() {
         if(isAdd)
-            ((MainActivity) CONTEXT.get(CONTEXT.size() - 1)).OnResume(intentType);
-        else
             ((MainActivity) CONTEXT.get(CONTEXT.size() - 1)).checkChanged();
+        else
+            ((MainActivity) CONTEXT.get(CONTEXT.size() - 1)).OnResume();
         CONTEXT.remove(CONTEXT.size() - 1);
         super.onBackPressed();
     }
@@ -34,7 +36,7 @@ public class AddItemSettingActivity extends WearableActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.list_add_item_setting);
-        final IntentId intentId = new IntentId(getIntent());
+
         final Button isCategory = (Button) findViewById(R.id.is_category);
         final Button isDoList = (Button) findViewById(R.id.is_doList);
 
@@ -51,6 +53,10 @@ public class AddItemSettingActivity extends WearableActivity {
         final Switch switch_isStep = (Switch) findViewById(R.id.add_switch);
 
         final Button confirm = (Button) findViewById(R.id.add_confirm);
+
+        intentId = new IntentId(getIntent());
+        categoryData = new CategoryData(getFilesDir(), intentId.getIntentId());
+        categoryData.load();
 
         button_second.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -78,7 +84,7 @@ public class AddItemSettingActivity extends WearableActivity {
                 button_second.setEnabled(true);
                 button_minute.setEnabled(true);
                 button_hour.setEnabled(false);
-                unitTime = "시";
+                unitTime = "시간";
             }
         });
 
@@ -88,7 +94,7 @@ public class AddItemSettingActivity extends WearableActivity {
                 isCategory.setEnabled(false);
                 isDoList.setEnabled(true);
                 linearLayout_toDo.setVisibility(View.GONE);
-                intentType = CustomIO.IOType.CATEGORY;
+                itemType = ItemType.CATEGORY;
             }
         });
 
@@ -98,28 +104,27 @@ public class AddItemSettingActivity extends WearableActivity {
                 isDoList.setEnabled(false);
                 isCategory.setEnabled(true);
                 linearLayout_toDo.setVisibility(View.VISIBLE);
-                intentType = CustomIO.IOType.TODO;
+                itemType = ItemType.TODO;
             }
         });
 
         confirm.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                final CustomIO customIO = new CustomIO(getFilesDir(), intentId.getIntentId());
-
-                if (intentType == CustomIO.IOType.CATEGORY) {
-                    final CategoryData toAddCategoryData = new CategoryData(editText.getText().toString());
-
-                    customIO.Save(toAddCategoryData.streamData());
+                if (itemType == ItemType.CATEGORY) {
+                    String itemName = editText.getText().toString();
+                    categoryData.addCategory(itemName);
                 }
                 else {
-                    final double pagePerTime = Double.parseDouble(editText_pageTarget.getText().toString())
+                    String itemName = editText.getText().toString();
+                    double pagePerTime = Double.parseDouble(editText_pageTarget.getText().toString())
                             / Double.parseDouble(editText_timeTarget.getText().toString());
-                    final int pageTotal = Integer.parseInt(editText_pageTotal.getText().toString());
-                    final ToDoData toAddToDoData = new ToDoData(editText.getText().toString(),
-                            pageTotal, pagePerTime, unitTime, editText_pageName.getText().toString(), switch_isStep.isChecked());
+                    int pageTotal = Integer.parseInt(editText_pageTotal.getText().toString());
+                    String pageName = editText_pageName.getText().toString();
+                    boolean isStep = switch_isStep.isChecked();
 
-                    customIO.Save(toAddToDoData.streamData());
+                    categoryData.addToDo(itemName, pageTotal, pagePerTime
+                            , unitTime, pageName, isStep);
                 }
                 isAdd = true;
                 onBackPressed();

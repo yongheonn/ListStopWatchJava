@@ -1,10 +1,19 @@
 package com.example.liststopwatchjava;
 
+import android.app.AlertDialog;
+import android.content.ClipData;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
+import android.view.MotionEvent;
+import android.view.View;
+import android.widget.Button;
+import android.widget.Toast;
 
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.wear.widget.drawer.WearableActionDrawerView;
 import androidx.wear.widget.drawer.WearableDrawerLayout;
@@ -23,43 +32,43 @@ public class MainActivity extends WearableActivity {
     private WearableActionDrawerView wearableActionDrawer;
 
     private IntentId intentId;
-    private CategoryData categoryData = new CategoryData();
+    private CategoryData categoryData;
     private CategoryListAdapter adapter;
     private Context context;
     public static ArrayList<Context> CONTEXT = new ArrayList<Context>();
+    public Button deleteButton;
+    public boolean isDeleteOn = false;
 
-    public void OnResume(CustomIO.IOType _ioType) {
+    public void OnResume() {
         super.onResume();
-        categoryChangeApply(_ioType);
         adapter.notifyDataSetChanged();
     }
 
-    public void OnResumeSetting() throws IOException, ParseException {
+    public void OnResumeSetting() {
         super.onResume();
-        CustomIO customIO = new CustomIO(getFilesDir(), intentId.getIntentId());
-        customIO.load(categoryData);
+        categoryData.load();
         adapter.notifyItemChanged(0);
     }
 
     public void checkChanged() {
-        CustomIO customIO = new CustomIO(getFilesDir(), intentId.getIntentId());
-        try {
-            customIO.load(categoryData);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
+        categoryData.load();
         adapter.notifyDataSetChanged();
     }
 
     @Override
     public void onBackPressed() {
-        if(CONTEXT.size() > 0) {
-            ((MainActivity) MainActivity.CONTEXT.get(CONTEXT.size() - 1)).checkChanged();
-            CONTEXT.remove(CONTEXT.size() - 1);
+        if(isDeleteOn) {
+            deleteButton.setVisibility(View.GONE);
+            deleteButton.setEnabled(false);
+            isDeleteOn = false;
         }
-        super.onBackPressed();
+        else {
+            if (CONTEXT.size() > 0) {
+                ((MainActivity) MainActivity.CONTEXT.get(CONTEXT.size() - 1)).checkChanged();
+                CONTEXT.remove(CONTEXT.size() - 1);
+            }
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -72,25 +81,44 @@ public class MainActivity extends WearableActivity {
 
         intentId = new IntentId(getIntent());
 
-        CustomIO customIO = new CustomIO(getFilesDir(), intentId.getIntentId());
-
-        try {
-            customIO.load(categoryData);
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
-        }
+        categoryData = new CategoryData(getFilesDir(), intentId.getIntentId());
+        categoryData.load();
 
         adapter = new CategoryListAdapter(categoryData, new TouchListener());
         recyclerList.setLayoutManager(
                 new CustomScrollingLayoutCallback(this));
+        ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(new ItemTouchHelperCallback(adapter));
+
+        mItemTouchHelper.attachToRecyclerView(recyclerList);
         recyclerList.setAdapter(adapter);
 
+        recyclerList.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN: {
+                        if(isDeleteOn) {
+                            deleteButton.setVisibility(View.GONE);
+                            deleteButton.setEnabled(false);
+                            isDeleteOn = false;
+                        }
+                        break;
+                    }
+                    default: {
+
+                        break;
+                    }
+                }
+                return false;
+            }
+        });
     }
 
     private class TouchListener implements CategoryListAdapter.OnItemClickListener {
         @Override
         public void onTitleClick() {
-            if(intentId.getIntentId().size() > 1) {
+            if (intentId.getIntentId().size() > 1) {
                 Intent intent = new Intent(getApplicationContext(), CategoryInfoActivity.class);
                 intent.putExtra("INTENT_ID", intentId.getIntentId());
                 startActivity(intent);
@@ -99,7 +127,7 @@ public class MainActivity extends WearableActivity {
 
         @Override
         public void onSettingClick() {
-            if(intentId.getIntentId().size() > 1) {
+            if (intentId.getIntentId().size() > 1) {
                 Intent intent = new Intent(getApplicationContext(), CategorySettingActivity.class);
                 intent.putExtra("INTENT_ID", intentId.getIntentId());
                 CONTEXT.add(context);
@@ -118,39 +146,62 @@ public class MainActivity extends WearableActivity {
         @Override
         public void onToDoClick(int position) {
             Intent intent = new Intent(getApplicationContext(), ToDoActivity.class);
-            int index = categoryData.sequence.get(position);
             intent.putExtra("INTENT_ID", intentId.getNextIntentId(position));
-            intent.putExtra("TODO_DATA", (Serializable) categoryData.toDoData.get(index));
             startActivity(intent);
         }
 
         @Override
         public void onAddClick(int position) {
             Intent intent = new Intent(getApplicationContext(), AddItemSettingActivity.class);
-            int endPosition = categoryData.sequence.size();
-            intent.putExtra("INTENT_ID", intentId.getNextIntentId(endPosition));
+            intent.putExtra("INTENT_ID", intentId.getIntentId());
             CONTEXT.add(context);     //돌아올 때 지금 Context로 돌아오기
             startActivity(intent);
         }
-    }
 
-    private void categoryChangeApply(CustomIO.IOType _ioType) {
-        CustomIO customIO = new CustomIO(getFilesDir(), intentId.getIntentId());
-        try {
-            if (_ioType == CustomIO.IOType.CATEGORY) {
-                categoryData.sequence.addCategory();
-                categoryData.categoryData.add(new CategoryData());
-            } else {
-                categoryData.sequence.addToDo();
-                categoryData.toDoData.add(new ToDoData());
+        @Override
+        public void onLongClick(Button button) {
+            if(deleteButton != null) {
+                deleteButton.setVisibility(View.GONE);
+                deleteButton.setEnabled(false);
             }
-
-            customIO.Save(categoryData.streamData());
-            customIO.load(categoryData);
-        } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            deleteButton = button;
+            isDeleteOn = true;
         }
-    }
 
+        @Override
+        public void onCategoryDelete(final int _position) {
+            AlertDialog.Builder msgBuilder = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(categoryData.loadCategory(_position).getName())
+                    .setMessage("이 카테고리를 제거하시겠습니까?")
+                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                        @Override public void onClick(DialogInterface dialogInterface, int i) {
+                            categoryData.deleteCategory(_position);
+                            checkChanged();
+                        }
+                    }).setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                        @Override public void onClick(DialogInterface dialogInterface, int i) {
+
+                        } });
+            AlertDialog msgDlg = msgBuilder.create(); msgDlg.show();
+        }
+
+        @Override
+        public void onToDoDelete(final int _position) {
+            AlertDialog.Builder msgBuilder = new AlertDialog.Builder(MainActivity.this)
+                    .setTitle(categoryData.loadToDo(_position).getName())
+                    .setMessage("이 할일을 제거하시겠습니까?")
+                    .setPositiveButton("확인", new DialogInterface.OnClickListener() {
+                        @Override public void onClick(DialogInterface dialogInterface, int i) {
+                            categoryData.deleteToDo(_position);
+                            checkChanged();
+                        }
+                    }).setNegativeButton("취소", new DialogInterface.OnClickListener() {
+                        @Override public void onClick(DialogInterface dialogInterface, int i) {
+
+                        } });
+            AlertDialog msgDlg = msgBuilder.create(); msgDlg.show();
+        }
+
+    }
 }
 
