@@ -1,0 +1,155 @@
+<androidx.wear.widget.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:padding="@dimen/box_inset_layout_padding"
+    tools:context=".CategorySettingActivity"
+    tools:deviceIds="wear">
+
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="@dimen/inner_frame_layout_padding">
+
+            <TextView
+                android:id="@+id/category_setting_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="50dp"
+                android:textSize="30dp">
+
+            </TextView>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="30dp"
+                android:text="카테고리 이름">
+
+            </TextView>
+
+            <EditText
+                android:id="@+id/category_setting_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:singleLine="true">
+
+            </EditText>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/category_setting_dailyList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="30dp"
+                android:background="@color/white"/>
+
+            <EditText
+                android:id="@+id/category_setting_pageTarget"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:digits="0123456789"
+                android:hint="하루 목표 분량"
+                android:inputType="number"
+                android:singleLine="true"
+                android:layout_marginTop="10dp"></EditText>
+
+            <Spinner
+                android:id="@+id/category_setting_pageName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:hint="하루 목표 분량 단위"
+                android:singleLine="true"
+                android:spinnerMode="dialog"
+                android:textAlignment="center"
+                android:layout_marginTop="10dp"></Spinner>
+
+            <Spinner
+                android:id="@+id/category_setting_unitTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:singleLine="true"
+                android:spinnerMode="dialog"
+                android:textAlignment="center"
+                android:layout_marginTop="10dp"></Spinner>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="10dp">
+
+                <Button
+                    android:id="@+id/category_setting_add"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/green_corner_background"
+                    android:text="추가"
+                    android:layout_marginRight="10dp">
+
+                </Button>
+
+                <Button
+                    android:id="@+id/category_setting_delete"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/red_corner_background"
+                    android:text="삭제">
+
+                </Button>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="10dp"
+                android:layout_gravity="center_horizontal">
+
+                <Button
+                    android:id="@+id/category_setting_edit"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/grey_corner_background"
+                    android:text="편집"
+                    android:layout_marginRight="10dp">
+
+                </Button>
+
+                <Button
+                    android:id="@+id/category_setting_resetSelect"
+                    android:layout_width="100dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/blue_corner_background"
+                    android:text="선택 초기화">
+
+                </Button>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/category_setting_save"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/green_corner_background"
+                android:layout_marginTop="30dp"
+                android:text="저장"></Button>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.wear.widget.BoxInsetLayout>

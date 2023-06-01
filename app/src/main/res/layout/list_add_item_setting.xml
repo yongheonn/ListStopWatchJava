@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.wear.widget.BoxInsetLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black"
+    android:padding="@dimen/box_inset_layout_padding"
+    tools:context=".AddItemSettingActivity"
+    tools:deviceIds="wear">
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="@dimen/inner_frame_layout_padding"
+        android:orientation="vertical"
+        >
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="추가할 항목 설정">
+
+        </TextView>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="center_horizontal">
+            <Button
+                android:id="@+id/is_category"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/left_corner_background"
+                android:enabled="false"
+                android:text="카테고리">
+
+            </Button>
+            <Button
+                android:id="@+id/is_doList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/right_corner_background"
+                android:text="할 일">
+            </Button>
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/add_editText_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:hint="이름">
+
+        </EditText>
+
+        <LinearLayout
+            android:id="@+id/add_toDoOnly"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="center_horizontal"
+            android:paddingBottom="20dp"
+            android:visibility="gone">
+            <EditText
+                android:id="@+id/add_editText_pageTotal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:inputType="number"
+                android:digits="0123456789"
+                android:hint="분량">
+
+            </EditText>
+            <EditText
+                android:id="@+id/add_editText_pageName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:singleLine="true"
+                android:hint="분량 단위">
+
+            </EditText>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="하루 목표 속도"
+                >
+
+            </TextView>
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <EditText
+                    android:id="@+id/add_editText_pageTarget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:layout_gravity="center_horizontal"
+                    android:hint="분량">
+
+                </EditText>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="30dp"
+                    android:layout_gravity="center_horizontal"
+                    android:text="/">
+
+                </TextView>
+
+                <EditText
+                    android:id="@+id/add_editText_timeTarget"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:singleLine="true"
+                    android:inputType="number"
+                    android:digits="0123456789"
+                    android:layout_gravity="center_horizontal"
+                    android:hint="시간">
+
+                </EditText>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="5dp">
+                <Button
+                    android:id="@+id/add_button_timeSecond"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/left_corner_background"
+                    android:enabled="false"
+                    android:text="초">
+
+                </Button>
+
+                <Button
+                    android:id="@+id/add_button_timeMinute"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="#E0C63A"
+                    android:enabled="true"
+                    android:text="분">
+
+                </Button>
+
+                <Button
+                    android:id="@+id/add_button_timeHour"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:background="@drawable/right_corner_background"
+                    android:enabled="true"
+                    android:text="시">
+
+                </Button>
+                </LinearLayout>
+            </LinearLayout>
+            <Switch
+                android:id="@+id/add_switch"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="페이지 Step"
+                android:checked="true">
+            </Switch>
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/add_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/green_corner_background"
+            android:layout_gravity="center_horizontal"
+            android:text="확인">
+        </Button>
+
+    </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</androidx.wear.widget.BoxInsetLayout>

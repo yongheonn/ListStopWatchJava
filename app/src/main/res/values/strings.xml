@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">ListStopWatchJava</string>
+    <!--
+    This string is used for square devices and overridden by hello_world in
+    values-round/strings.xml for round devices.
+    -->
+    <string name="hello_world">Hello Square World!</string>
+    <string name="element_text">element</string>
+    <string name="category_title">카테고리</string>
+    <string name="title_activity_do_list">DoList</string>
+    <string name="add_item">새로운 카테고리 만들기</string>
+</resources>
