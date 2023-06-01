@@ -1,11 +1,14 @@
 package com.example.liststopwatchjava;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.wearable.activity.WearableActivity;
 import android.view.MotionEvent;
@@ -13,6 +16,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.wear.widget.drawer.WearableActionDrawerView;
@@ -30,6 +34,10 @@ public class MainActivity extends WearableActivity {
     private WearableDrawerLayout wearableDrawerLayout;
     private WearableNavigationDrawerView wearableNavigationDrawer;
     private WearableActionDrawerView wearableActionDrawer;
+
+    final int REQUEST_ALL_PERMISSION = 1;
+    String[] PERMISSIONS = {Manifest.permission.WRITE_EXTERNAL_STORAGE
+    , Manifest.permission.READ_EXTERNAL_STORAGE};
 
     private IntentId intentId;
     private CategoryData categoryData;
@@ -57,12 +65,11 @@ public class MainActivity extends WearableActivity {
 
     @Override
     public void onBackPressed() {
-        if(isDeleteOn) {
+        if (isDeleteOn) {
             deleteButton.setVisibility(View.GONE);
             deleteButton.setEnabled(false);
             isDeleteOn = false;
-        }
-        else {
+        } else {
             if (CONTEXT.size() > 0) {
                 ((MainActivity) MainActivity.CONTEXT.get(CONTEXT.size() - 1)).checkChanged();
                 CONTEXT.remove(CONTEXT.size() - 1);
@@ -76,6 +83,8 @@ public class MainActivity extends WearableActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         context = this;
+        if (!hasPermissions(this, PERMISSIONS))
+            requestPermissions(PERMISSIONS, REQUEST_ALL_PERMISSION);
 
         RecyclerView recyclerList = (RecyclerView) findViewById(R.id.category_list);
 
@@ -98,7 +107,7 @@ public class MainActivity extends WearableActivity {
             public boolean onTouch(View v, MotionEvent event) {
                 switch (event.getAction()) {
                     case MotionEvent.ACTION_DOWN: {
-                        if(isDeleteOn) {
+                        if (isDeleteOn) {
                             deleteButton.setVisibility(View.GONE);
                             deleteButton.setEnabled(false);
                             isDeleteOn = false;
@@ -113,6 +122,37 @@ public class MainActivity extends WearableActivity {
                 return false;
             }
         });
+    }
+
+    private boolean hasPermissions(Context context, String[] permissions) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context != null && permissions != null) {
+            for (String permission : permissions) {
+                if (ActivityCompat.checkSelfPermission(context, permission)
+                        != PackageManager.PERMISSION_GRANTED
+                ) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(final int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        if (requestCode != -1) {
+            switch (requestCode) {
+                case REQUEST_ALL_PERMISSION: {
+                    // If request is cancelled, the result arrays are empty.
+                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                        Toast.makeText(this, "Permissions granted!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        requestPermissions(permissions, requestCode);
+                        Toast.makeText(this, "Permissions must be granted", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
     }
 
     private class TouchListener implements CategoryListAdapter.OnItemClickListener {
@@ -132,6 +172,13 @@ public class MainActivity extends WearableActivity {
                 intent.putExtra("INTENT_ID", intentId.getIntentId());
                 CONTEXT.add(context);
                 startActivity(intent);
+                return;
+            }
+            if (intentId.getIntentId().size() == 1) {
+                Intent intent = new Intent(getApplicationContext(), MainSettingActivity.class);
+                intent.putExtra("INTENT_ID", intentId.getIntentId());
+                startActivity(intent);
+                return;
             }
         }
 
@@ -160,7 +207,7 @@ public class MainActivity extends WearableActivity {
 
         @Override
         public void onLongClick(Button button) {
-            if(deleteButton != null) {
+            if (deleteButton != null) {
                 deleteButton.setVisibility(View.GONE);
                 deleteButton.setEnabled(false);
             }
@@ -174,15 +221,19 @@ public class MainActivity extends WearableActivity {
                     .setTitle(categoryData.loadCategory(_position).getName())
                     .setMessage("이 카테고리를 제거하시겠습니까?")
                     .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                        @Override public void onClick(DialogInterface dialogInterface, int i) {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
                             categoryData.deleteCategory(_position);
                             checkChanged();
                         }
                     }).setNegativeButton("취소", new DialogInterface.OnClickListener() {
-                        @Override public void onClick(DialogInterface dialogInterface, int i) {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
 
-                        } });
-            AlertDialog msgDlg = msgBuilder.create(); msgDlg.show();
+                        }
+                    });
+            AlertDialog msgDlg = msgBuilder.create();
+            msgDlg.show();
         }
 
         @Override
@@ -191,15 +242,19 @@ public class MainActivity extends WearableActivity {
                     .setTitle(categoryData.loadToDo(_position).getName())
                     .setMessage("이 할일을 제거하시겠습니까?")
                     .setPositiveButton("확인", new DialogInterface.OnClickListener() {
-                        @Override public void onClick(DialogInterface dialogInterface, int i) {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
                             categoryData.deleteToDo(_position);
                             checkChanged();
                         }
                     }).setNegativeButton("취소", new DialogInterface.OnClickListener() {
-                        @Override public void onClick(DialogInterface dialogInterface, int i) {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
 
-                        } });
-            AlertDialog msgDlg = msgBuilder.create(); msgDlg.show();
+                        }
+                    });
+            AlertDialog msgDlg = msgBuilder.create();
+            msgDlg.show();
         }
 
     }
